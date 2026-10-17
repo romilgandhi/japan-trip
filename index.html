@@ -52,8 +52,9 @@ h1{font-family:var(--display);font-size:clamp(30px,7vw,42px);line-height:1.05;ma
 
 /* main tabs */
 .tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);border-bottom:1px solid var(--line)}
-.tabs .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-block:10px}
-.tab{border:0;background:transparent;padding:10px 6px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;color:var(--muted)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-block:10px}
+.tab{border:0;background:transparent;padding:10px 4px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;color:var(--muted);white-space:nowrap}
+@media (max-width:400px){.tab{font-size:14px}}
 .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .tab .n{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:12px;margin-left:4px}
 
@@ -140,6 +141,36 @@ main .wrap{padding-block:18px 48px}
 .bk small{display:block;color:var(--muted);font-size:13px;font-weight:400}
 .bk.ok .t{text-decoration:line-through;color:var(--muted)}
 
+/* packing */
+.summary{background:var(--card);border-radius:16px;padding:18px;display:grid;gap:14px;box-shadow:0 1px 2px rgba(0,0,0,.06);border-top:6px solid var(--head)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.fact{background:var(--bg);border-radius:10px;padding:10px 12px}
+.fact small{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fact span{font-weight:600;font-size:15px}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.sw{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.sw i{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--s)}
+details.psec{background:var(--card);border-radius:14px;margin-top:12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+details.psec summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+details.psec summary::-webkit-details-marker{display:none}
+details.psec summary::after{content:"▾";margin-left:4px;color:var(--muted);transition:transform .2s}
+details.psec:not([open]) summary::after{transform:rotate(-90deg)}
+details.psec summary .cnt{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);background:var(--bg);padding:2px 10px;border-radius:999px}
+details.psec summary .cnt.full{color:var(--vegan);background:var(--vegan-bg)}
+.pbody{padding:0 16px 14px}
+.pbody h4{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 2px}
+.pbody .item .qty{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:999px;padding:2px 10px}
+.pbody .pnote{font-size:14px;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:10px}
+.outfit{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;padding:10px 0;border-top:1px solid var(--line);align-items:start}
+.outfit:first-of-type{border-top:0}
+.outfit button{border:0;background:var(--bg);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--c);white-space:nowrap}
+.outfit .ttl{font-size:13px;color:var(--muted)}
+.cube{padding:10px 0;border-top:1px solid var(--line)}
+.cube:first-of-type{border-top:0}
+.cube b{display:block}
+.resetrow{display:flex;justify-content:flex-end;margin-top:14px}
+.resetrow button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;font-size:14px;cursor:pointer}
+
 footer{font-size:13px;color:var(--muted);padding-block:0 32px}
 @media (prefers-reduced-motion:no-preference){.fade{animation:in .22s ease}}
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
@@ -159,7 +190,8 @@ footer{font-size:13px;color:var(--muted);padding-block:0 32px}
 
 <div class="tabs">
   <div class="wrap" role="tablist">
-    <button class="tab" role="tab" id="t-plan" data-v="plan">Day plan</button>
+    <button class="tab" role="tab" id="t-plan" data-v="plan">Plan</button>
+    <button class="tab" role="tab" id="t-pack" data-v="pack">Packing</button>
     <button class="tab" role="tab" id="t-phr" data-v="phr">Phrases</button>
     <button class="tab" role="tab" id="t-bk" data-v="bk">To book<span class="n" id="bkn"></span></button>
   </div>
@@ -348,11 +380,57 @@ const BOOKINGS = [
  ["Osaka hotel","2 – 7 Nov · not in spreadsheet",false]
 ];
 
+// Packing plan (from the packing PDF). Outfits are matched to the itinerary days; the Fuji outfit moved to Day 5.
+const OUTFITS = [
+ "Cream knit + blue jeans + trench coat + sneakers. Practical for Uniqlo, GU and Shinjuku.",
+ "Black top + tailored trousers + coat + sneakers. Wear layers that are easy to remove indoors at teamLab.",
+ "Cream sweater + midi skirt + tights + coat. Switch to trousers if it's cold or wet.",
+ "Striped or plain long-sleeve top + jeans + cardigan + sneakers.",
+ "Thermal top + warm knit + puffer + trousers + scarf. Add warm socks and gloves; check the Fuji forecast the day before.",
+ "Fine-knit top + black trousers + cardigan. Wear sneakers for the train.",
+ "Beige sweater + jeans + coat. Do laundry in the evening if convenient.",
+ "Ivory top + brown cardigan + black trousers. Rewear your coat if needed.",
+ "Black dress + tights + coat. Add a thermal layer underneath if you feel cold.",
+ "Black knit + jeans + trench coat. Use a small bag for daily essentials.",
+ "Cream top + tailored trousers + coat.",
+ "Black top + dark jeans + coat. Add earrings and lipstick for a dressier evening look.",
+ "Ivory sweater + jeans + cardigan. Keep a clean top handy in your cabin bag."
+];
+
+const PACK = [
+ {id:"clothes", title:"👕 Clothes", groups:[
+   ["Tops",[["Basic long-sleeve tops",3],["Knit sweaters",2],["Fine-knit or dressy top",1],["Basic T-shirts for layering",2],["Thermal base-layer tops",2]]],
+   ["Bottoms & dresses",[["Straight-leg jeans",1],["Dark jeans or comfortable trousers",1],["Tailored black trousers",1],["Midi skirt",1],["Knit or long-sleeve dress",1],["Thermal leggings",1]]],
+   ["Outerwear & accessories",[["Warm insulated puffer jacket",1],["Trench coat or smart midweight coat",1],["Cardigan or fleece layer",1],["Warm scarf",1],["Gloves for cold Mt Fuji mornings","1 pair"]]],
+   ["Underwear & sleepwear",[["Underwear",9],["Bras",3],["Everyday socks","8 pairs"],["Warm socks","2 pairs"],["Pyjama sets",2],["Tights","1 pair"]]],
+   ["Shoes & bags",[["Comfortable walking sneakers","1 pair"],["Second shoes or ankle boots (optional)","1 pair"],["Crossbody bag",1],["Foldable shopping tote",1],["Compact backpack (optional)",1]]]],
+  note:"No puffer? Bring your warmest insulated jacket. Mt Fuji can be much colder than central Tokyo, especially mornings and evenings."},
+ {id:"toil", title:"🧴 Toiletries & makeup", groups:[[null,["Face cleanser","Moisturiser","Sunscreen SPF 50+","Lip balm","Makeup remover","Foundation or skin tint","Concealer and powder","Blush and mascara","Eyebrow pencil and lipstick","Makeup brushes or sponge","Toothbrush and toothpaste","Shampoo and conditioner","Body wash","Deodorant","Hairbrush and hair ties","Hair serum or styling product","Hand cream and body moisturiser","Tissues and wet wipes","Period products, if needed","Nail file and tweezers"].map(x=>[x])]],
+  note:"Autumn air can be dry, so prioritise moisturiser and lip balm. Put liquids in a leakproof pouch and check cabin liquid rules."},
+ {id:"ess", title:"🛂 Documents, tech & essentials", groups:[
+   ["Documents & money",["Passport and any visa documents","Travel insurance policy and emergency contacts","Flight tickets and hotel confirmations","Bank cards and some Japanese yen"].map(x=>[x])],
+   ["Electronics",["Phone and charging cable","Power bank","Japan-compatible plug adapter","Earphones","Camera and accessories, if using"].map(x=>[x])],
+   ["Health",["Regular medicines in original packaging","Plasters and blister patches","Usual stomach medicines, if appropriate"].map(x=>[x])],
+   ["Other",["Reusable water bottle","Compact umbrella or rain jacket","Sunglasses","Laundry bag","Packing cubes","Foldable shopping tote"].map(x=>[x])]],
+  note:"Keep the power bank in your cabin bag, not checked luggage, and follow your airline's battery rules."},
+ {id:"flight", title:"✈ Flight outfit", groups:[[null,["Ivory long-sleeve top or comfortable knit","Black stretch trousers or comfortable jeans","Cardigan plus your warm coat","Comfortable sneakers","Crossbody bag and cabin bag","Socks, lip balm, eye mask and headphones"].map(x=>[x])]],
+  note:"Avoid tight waistbands. Keep passport, phone, medicines and chargers within easy reach."},
+ {id:"final", title:"⏰ Final 24 hours", groups:[[null,["Check forecasts for Tokyo, Kyoto, Osaka and Mt Fuji","Try on the Mt Fuji outfit with all warm layers","Charge phone and power bank","Download offline maps and save hotel addresses","Confirm baggage limits and passport requirements","Check travel insurance and bookings","Medicines and documents in cabin bag","Weigh suitcase and leave room for shopping","Set aside flight outfit","Check passport and wallet before leaving home"].map(x=>[x])]]}
+];
+
+const CUBES = [
+ ["Cube 1: Tops","Fold tops, T-shirts and knitwear. Keep one clean top out for the flight home."],
+ ["Cube 2: Bottoms","Jeans, trousers, skirt and dress. Put heavier items near the suitcase wheels."],
+ ["Pouch 3: Toiletries & makeup","Seal liquids separately to prevent spills."],
+ ["Pouch 4: Small items","Socks, underwear, scarf, tights and accessories. Keep dirty laundry separate."],
+ ["Bulky items","Wear your puffer or coat and walking sneakers on the flight. Leave room for shopping."]
+];
+
 const store = {
   get(k,d){try{const v=localStorage.getItem("jp26:"+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem("jp26:"+k,JSON.stringify(v))}catch(e){}}
 };
-let done = store.get("done",{}), bk = store.get("bk",{}), filter = store.get("filter","all");
+let done = store.get("done",{}), bk = store.get("bk",{}), filter = store.get("filter","all"), pk = store.get("pack",{});
 let view = store.get("view","plan");
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const dt = iso => new Date(iso+"T00:00:00");
@@ -376,7 +454,7 @@ function bkCount(){const n=BOOKINGS.filter((b,i)=>!bkOn(i)).length;const el=docu
 function setView(v){
   view=v; store.set("view",v);
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));
-  ({plan:renderPlan,phr:renderPhrases,bk:renderBookings})[v]();
+  ({plan:renderPlan,pack:renderPacking,phr:renderPhrases,bk:renderBookings}[v]||renderPlan)();
 }
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{setView(t.dataset.v);window.scrollTo({top:0})});
 
@@ -416,6 +494,7 @@ function renderPlan(){
         <div class="progress"><div class="bar"><i style="width:${keys.length?doneN/keys.length*100:0}%"></i></div><span id="prog">${doneN} of ${keys.length} done</span></div>
         ${d.book?`<div class="alert"><b>Book this:</b> ${esc(d.book)}</div>`:""}
         ${d.tip?`<div class="tip">💡 ${esc(d.tip)}</div>`:""}
+        <div class="tip">👗 <b>Wear:</b> ${esc(OUTFITS[cur])}</div>
         <div class="stay"><span>Staying at:</span> <b>${d.stay?esc(d.stay):"Not in spreadsheet yet"}</b></div>
       </section>
 
@@ -445,6 +524,56 @@ function card([name,area,desc,ok],type,d){
   const where = d.city==="Mt Fuji" ? "Yamanashi Japan" : d.city+" Japan";
   return `<div class="pick"><div class="tags">${tags}</div><div class="name">${esc(name)}</div><div class="area">📍 ${esc(area)}</div>
     <p>${esc(desc)}</p><a href="${Q(name+", "+where)}" target="_blank" rel="noopener">Open in Maps →</a></div>`;
+}
+
+const PALETTE = [["Cream","#efe5cf"],["Ivory","#f7f2e4"],["Black","#1b1b1b"],["Camel","#c19a6b"],["Chocolate","#4e3426"],["Denim","#2f4a6d"]];
+let openSecs = store.get("packOpen",{clothes:true});
+function renderPacking(){
+  const allKeys=[]; PACK.forEach(s=>s.groups.forEach(([,items])=>items.forEach(([l])=>allKeys.push(s.id+"|"+l))));
+  const total=allKeys.length, got=allKeys.filter(k=>pk[k]).length;
+  const v=document.getElementById("view");
+  const secHTML = PACK.map(s=>{
+    const keys=[]; s.groups.forEach(([,items])=>items.forEach(([l])=>keys.push(s.id+"|"+l)));
+    const n=keys.filter(k=>pk[k]).length;
+    let j=0;
+    return `<details class="psec" data-s="${s.id}" ${openSecs[s.id]?"open":""}><summary>${s.title}<span class="cnt ${n===keys.length?"full":""}" data-c="${s.id}">${n}/${keys.length}</span></summary><div class="pbody">
+      ${s.groups.map(([g,items])=>`${g?`<h4>${esc(g)}</h4>`:""}<ul style="list-style:none;margin:0;padding:0">${items.map(([l,q])=>{const k=s.id+"|"+l, id="p_"+s.id+"_"+(j++);return `
+        <li class="item ${pk[k]?"done":""}"><input type="checkbox" id="${id}" data-k="${esc(k)}" data-s="${s.id}" ${pk[k]?"checked":""}><label for="${id}">${esc(l)}</label>${q!==undefined?`<span class="qty">${typeof q==="number"?"×"+q:esc(q)}</span>`:""}</li>`}).join("")}</ul>`).join("")}
+      ${s.note?`<div class="pnote">💡 ${esc(s.note)}</div>`:""}</div></details>`;}).join("");
+
+  v.innerHTML = `<div class="fade">
+    <section class="summary">
+      <div><div class="pill" style="--c:var(--muted)">Packing plan · 13 days</div><h2 style="font-family:var(--display);font-size:clamp(24px,5.5vw,32px);margin:4px 0 0;line-height:1.15">Pack a small capsule, wear it on repeat</h2></div>
+      <div class="facts">
+        <div class="fact"><small>Style</small><span>Elegant, neutral mix-and-match</span></div>
+        <div class="fact"><small>Luggage</small><span>1 large suitcase + cabin bag</span></div>
+        <div class="fact"><small>Laundry</small><span>Once, around Day 7 or 8 (Kyoto)</span></div>
+        <div class="fact"><small>Warmth</small><span>You feel cold easily, so prioritise warm layers</span></div>
+      </div>
+      <div><div class="sub" style="margin-bottom:8px;color:var(--muted);font-size:14px">Colour palette. Each piece should match at least two others.</div>
+        <div class="swatches">${PALETTE.map(([n,c])=>`<span class="sw"><i style="--s:${c}"></i>${n}</span>`).join("")}</div></div>
+      <div class="progress"><div class="bar"><i id="pbar" style="width:${got/total*100}%"></i></div><span id="pprog">${got} of ${total} packed</span></div>
+    </section>
+    ${secHTML}
+    <details class="psec" data-s="outfits" ${openSecs.outfits?"open":""}><summary>👗 Outfit for each day</summary><div class="pbody">
+      ${DAYS.map((d,i)=>`<div class="outfit" style="--c:var(${CITY[d.city]})"><button data-day="${i}">Day ${i+1}</button><div><div class="ttl">${wd(d.date)} ${dm(d.date)} · ${esc(d.title)}</div>${esc(OUTFITS[i])}</div></div>`).join("")}
+      <div class="pnote">💡 These reuse the same pieces, so there's nothing extra to buy. Swap days around if plans change.</div></div></details>
+    <details class="psec" data-s="cubes" ${openSecs.cubes?"open":""}><summary>🧳 How to pack the suitcase</summary><div class="pbody">
+      ${CUBES.map(([t,x])=>`<div class="cube"><b>${esc(t)}</b>${esc(x)}</div>`).join("")}</div></details>
+    <div class="resetrow"><button id="preset">Untick everything</button></div>
+  </div>`;
+
+  v.querySelectorAll("details.psec").forEach(dl=>dl.addEventListener("toggle",()=>{openSecs[dl.dataset.s]=dl.open;store.set("packOpen",openSecs);}));
+  v.querySelectorAll(".pbody .item input").forEach(c=>c.onchange=()=>{
+    pk[c.dataset.k]=c.checked; store.set("pack",pk); c.closest(".item").classList.toggle("done",c.checked);
+    const s=PACK.find(x=>x.id===c.dataset.s), keys=[]; s.groups.forEach(([,items])=>items.forEach(([l])=>keys.push(s.id+"|"+l)));
+    const n=keys.filter(k=>pk[k]).length, el=v.querySelector(`[data-c="${s.id}"]`); el.textContent=n+"/"+keys.length; el.classList.toggle("full",n===keys.length);
+    const g=allKeys.filter(k=>pk[k]).length; v.querySelector("#pprog").textContent=g+" of "+total+" packed"; v.querySelector("#pbar").style.width=(g/total*100)+"%";
+  });
+  v.querySelectorAll(".outfit button").forEach(b=>b.onclick=()=>{cur=+b.dataset.day;store.set("day",cur);setView("plan");window.scrollTo({top:0});});
+  const r=v.querySelector("#preset"); let armed=false;
+  r.onclick=()=>{ if(!armed){armed=true;r.textContent="Tap again to untick all";setTimeout(()=>{armed=false;r.textContent="Untick everything"},3000);return;}
+    pk={}; store.set("pack",pk); renderPacking(); };
 }
 
 const canSpeak = "speechSynthesis" in window;
