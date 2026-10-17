@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e2d4d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Japan Trip">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Japan Trip 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: travel-pass header, three big tabs (Plan / Phrases / To book), day picker as large tappable cards, each day as stacked time-of-day cards with food picks below */
+:root{
+  --bg:#f1f3f2; --card:#ffffff; --ink:#18202b; --muted:#5f6873; --line:#dde2e0;
+  --head:#1e2d4d; --head-ink:#f4f6fb;
+  --vegan:#2f7a3c; --vegan-bg:#e2f1e3;
+  --must:#b14a1e; --must-bg:#fbe6db;
+  --warn:#86650a; --warn-bg:#f8efcc;
+  --tokyo:#2b4a8b; --fuji:#1d7f86; --kyoto:#8a3a6b; --amano:#3a7cc0; --osaka:#c2601b;
+  --display:"Fraunces",Georgia,serif;
+  --body:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11151b; --card:#1a2029; --ink:#e8ebf0; --muted:#9ba4b0; --line:#2b323d;
+  --head:#0c1322; --head-ink:#e8ebf0;
+  --vegan:#8fd39a; --vegan-bg:#1c3322; --must:#f29a70; --must-bg:#3b2318; --warn:#e8c860; --warn-bg:#352d10;
+  --tokyo:#7f9fe0; --fuji:#5cc3c9; --kyoto:#d58ab8; --amano:#7cb5ee; --osaka:#f0a060;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151b; --card:#1a2029; --ink:#e8ebf0; --muted:#9ba4b0; --line:#2b323d;
+  --head:#0c1322; --head-ink:#e8ebf0;
+  --vegan:#8fd39a; --vegan-bg:#1c3322; --must:#f29a70; --must-bg:#3b2318; --warn:#e8c860; --warn-bg:#352d10;
+  --tokyo:#7f9fe0; --fuji:#5cc3c9; --kyoto:#d58ab8; --amano:#7cb5ee; --osaka:#f0a060;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--head)}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--must);outline-offset:2px}
+
+/* header */
+header.top{background:var(--head);color:var(--head-ink)}
+header.top .wrap{padding-block:20px 16px;display:grid;gap:10px}
+.dates{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+h1{font-family:var(--display);font-size:clamp(30px,7vw,42px);line-height:1.05;margin:0}
+.route{display:flex;flex-wrap:wrap;gap:6px;font-size:14px}
+.route span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.12)}
+.countdown{font-size:14px;font-weight:600}
+
+/* main tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-block:10px}
+.tab{border:0;background:transparent;padding:10px 6px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tab .n{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:12px;margin-left:4px}
+
+main .wrap{padding-block:18px 48px}
+
+/* day picker */
+.picker{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scroll-snap-type:x proximity}
+.dbtn{flex:0 0 auto;width:96px;scroll-snap-align:start;border:2px solid transparent;background:var(--card);border-radius:12px;padding:10px 10px 9px;text-align:left;cursor:pointer;position:relative;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.dbtn .dn{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+.dbtn .dd{font-size:15px;font-weight:700;display:block}
+.dbtn .dc{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;margin-top:2px;color:var(--muted)}
+.dbtn .dc::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.dbtn[aria-selected="true"]{border-color:var(--c)}
+.dbtn .flag{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.dbtn .tod{position:absolute;top:-8px;left:8px;font-size:10px;font-weight:700;background:var(--must);color:#fff;padding:1px 6px;border-radius:999px}
+
+/* day header */
+.dayhead{background:var(--card);border-radius:16px;padding:18px;display:grid;gap:12px;border-top:6px solid var(--c);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.dayhead .row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.06em}
+.dayhead h2{font-family:var(--display);font-size:clamp(24px,5.5vw,32px);line-height:1.15;margin:4px 0 0;text-wrap:balance}
+.dayhead .sub{color:var(--muted);font-size:15px}
+.navbtns{display:flex;gap:8px}
+.navbtns button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.navbtns button:disabled{opacity:.4;cursor:default}
+.progress{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+.bar{flex:1;height:8px;border-radius:999px;background:var(--bg);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--vegan);border-radius:999px;transition:width .3s}
+.alert{border-radius:10px;padding:10px 12px;font-size:15px;background:var(--warn-bg)}
+.alert b{color:var(--warn)}
+.tip{border-radius:10px;padding:10px 12px;font-size:15px;background:var(--bg)}
+.stay{font-size:15px}
+.stay span{color:var(--muted)}
+
+/* timeline */
+.sec-title{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:26px 2px 10px}
+.slots{display:grid;gap:12px}
+.slot{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.slot h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
+.slot h3 .ico{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--bg);font-size:14px}
+.slot ul{list-style:none;margin:0;padding:0;display:grid}
+.item{display:flex;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item input{width:22px;height:22px;accent-color:var(--vegan);flex:0 0 auto;margin:0}
+.item label{flex:1;min-width:0;cursor:pointer}
+.item.done label{color:var(--muted);text-decoration:line-through}
+.maplink{flex:0 0 auto;font-size:13px;font-weight:600;text-decoration:none;color:var(--c);border:1px solid var(--line);border-radius:999px;padding:5px 12px;white-space:nowrap}
+
+/* picks */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:14px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
+.pick{background:var(--card);border-radius:14px;padding:14px 16px;display:grid;gap:6px;align-content:start;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+.tag.v{background:var(--vegan-bg);color:var(--vegan)}
+.tag.m{background:var(--must-bg);color:var(--must)}
+.tag.a{background:var(--warn-bg);color:var(--warn)}
+.pick .name{font-weight:700;font-size:16px}
+.pick .area{font-size:13px;color:var(--muted)}
+.pick p{margin:0;font-size:15px}
+.pick a{font-size:14px;font-weight:600;color:var(--ink)}
+.empty{background:var(--card);border-radius:14px;padding:14px 16px;color:var(--muted);font-size:15px;border:1px dashed var(--line)}
+.finds{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.finds a{font-size:14px;font-weight:600;color:var(--vegan);background:var(--vegan-bg);border-radius:999px;padding:7px 14px;text-decoration:none}
+
+/* phrases */
+.pgroup{background:var(--card);border-radius:14px;padding:6px 16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.pgroup h3{font-family:var(--display);font-size:20px;margin:10px 0 4px}
+.phrase{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.pgroup h3 + .phrase{border-top:0}
+.phrase .txt{flex:1;min-width:0}
+.phrase .say{font-size:18px;font-weight:700;display:block}
+.phrase .en{font-size:14px;color:var(--muted)}
+.speak{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--bg);cursor:pointer;display:grid;place-items:center}
+.speak svg{width:18px;height:18px;fill:currentColor}
+.hint{font-size:14px;color:var(--muted);margin:0 2px 14px}
+
+/* bookings */
+.bk{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.bk input{width:22px;height:22px;accent-color:var(--vegan);flex:0 0 auto;margin:0}
+.bk .t{font-weight:600}
+.bk small{display:block;color:var(--muted);font-size:13px;font-weight:400}
+.bk.ok .t{text-decoration:line-through;color:var(--muted)}
+
+footer{font-size:13px;color:var(--muted);padding-block:0 32px}
+@media (prefers-reduced-motion:no-preference){.fade{animation:in .22s ease}}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+@keyframes in{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="dates">25 Oct – 6 Nov 2026 · 13 days</div>
+    <h1>Japan Trip 2026</h1>
+    <div class="route"><span>Tokyo</span><span>Mt Fuji</span><span>Kyoto</span><span>Amanohashidate</span><span>Osaka</span></div>
+    <div class="countdown" id="countdown"></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" id="t-plan" data-v="plan">Day plan</button>
+    <button class="tab" role="tab" id="t-phr" data-v="phr">Phrases</button>
+    <button class="tab" role="tab" id="t-bk" data-v="bk">To book<span class="n" id="bkn"></span></button>
+  </div>
+</div>
+
+<main><div class="wrap" id="view"></div></main>
+<footer><div class="wrap">Plan from your spreadsheet. Food picks are suggestions, so check hours on Maps before you go. Ticks are saved on this device.</div></footer>
+
+<script>
+const Q = s => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s);
+const CITY = {Tokyo:"--tokyo","Mt Fuji":"--fuji",Kyoto:"--kyoto",Amanohashidate:"--amano",Osaka:"--osaka"};
+
+const DAYS = [
+ {date:"2026-10-25", city:"Tokyo", title:"Arrival, Ginza & Shinjuku", stay:"APA Hotel Shinjuku Gyoemmae",
+  slots:{Morning:[["Flight Sydney → Tokyo, check in at hotel","APA Hotel Shinjuku Gyoemmae"]],
+         Afternoon:[["Shopping at Uniqlo Ginza flagship","Uniqlo Ginza"],["GU Ginza","GU Ginza Tokyo"]],
+         Evening:[["Explore Omoide Yokocho","Omoide Yokocho Shinjuku"],["Tokyo Metropolitan Govt Building observatory (free)","Tokyo Metropolitan Government Building Observatory"],["Dinner and a walk around Shinjuku"]]},
+  vegan:[["Ain Soph. Journey","Shinjuku 3-chome · short walk from hotel","Fully vegan café. Famous for fluffy pancakes; good set lunches too."],
+         ["Ain Soph. Ginza","Ginza","Fully vegan. Handy refuel between Uniqlo and GU."],
+         ["T's TanTan","Tokyo Station (inside the gates)","Fully vegan ramen. The sesame tantanmen is the one to order."]],
+  must:[["Omoide Yokocho","Shinjuku West","Lantern-lit alley of tiny bars. Mostly meat skewers, so ask for vegetable ones (yasai).","ask"],
+        ["Shinjuku Gyoen","Next to your hotel","Huge garden by the hotel. Good for a jet-lag morning walk.","yes"]],
+  near:["Shinjuku","Ginza"]},
+
+ {date:"2026-10-26", city:"Tokyo", title:"Tokyo Bay area", stay:"APA Hotel Shinjuku Gyoemmae",
+  slots:{Morning:[["teamLab Borderless (booked via Klook)","teamLab Borderless Azabudai Hills"]],
+         Afternoon:[["Lunch at Azabudai Hills","Azabudai Hills"],["Zojo-ji Temple","Zojo-ji Tokyo"]],
+         Evening:[["Tokyo Tower","Tokyo Tower"],["Dinner with Tokyo Bay view"],["Roppongi evening walk","Roppongi"],["Rainbow Bridge views","Rainbow Bridge Tokyo"]]},
+  vegan:[], veganNote:"Few fully vegan spots right here. Tap a search below, or ask for a vegan menu at Azabudai Hills restaurants.",
+  must:[["Tofuya Ukai","Shiba Park, under Tokyo Tower","Tofu set meals in a traditional garden. Not vegan by default, so ask when booking.","ask"],
+        ["Zojo-ji at dusk","Shiba Park","Temple gate with Tokyo Tower lit up behind it. Classic photo.","yes"]],
+  near:["Azabudai Hills","Roppongi","Odaiba"]},
+
+ {date:"2026-10-27", city:"Tokyo", title:"Traditional Tokyo", stay:"APA Hotel Shinjuku Gyoemmae",
+  slots:{Morning:[["Senso-ji Temple, go early","Senso-ji"],["Kaminarimon Gate","Kaminarimon"],["Nakamise Street","Nakamise Shopping Street"],["Asakusa Shrine","Asakusa Shrine"]],
+         Afternoon:[["Lunch in Asakusa"],["Akihabara Electric Town","Akihabara Electric Town"]],
+         Evening:[["Tokyo Skytree","Tokyo Skytree"],["Solamachi and Sumida River walk","Tokyo Solamachi"],["Dinner"]]},
+  book:"Tokyo Skytree tickets",
+  vegan:[["Kaemon","Asakusa","Vegan Japanese food. Good for lunch after Senso-ji."],
+         ["Kyushu Jangara Akihabara","Akihabara","Ramen shop with a vegan ramen on the menu. Say 'vegan' when ordering."]],
+  must:[["Azuma kibi dango","Nakamise Street","Warm millet dumplings rolled in roasted soy flour. Usually vegan, but ask.","ask"],
+        ["Senso-ji before 8am","Asakusa","Quiet grounds and soft light before the tour groups arrive.","yes"]],
+  near:["Asakusa","Akihabara","Tokyo Skytree"]},
+
+ {date:"2026-10-28", city:"Tokyo", title:"Shibuya & Harajuku", stay:"APA Hotel Shinjuku Gyoemmae",
+  slots:{Morning:[["Meiji Shrine","Meiji Jingu"],["Walk through Yoyogi Park","Yoyogi Park"]],
+         Afternoon:[["Harajuku and Takeshita Street","Takeshita Street"],["Lunch in Harajuku"]],
+         Evening:[["Omotesando","Omotesando"],["Cat Street","Cat Street Harajuku"],["Shibuya Crossing","Shibuya Crossing"],["Shibuya Sky observation deck","Shibuya Sky"]]},
+  book:"Shibuya Sky (pick a sunset slot)",
+  vegan:[["Mominoki House","Harajuku","Long-running healthy restaurant with plenty of vegan dishes."],
+         ["Ain Soph. Journey","Shinjuku, back near hotel","Easy vegan dinner on the way home."]],
+  must:[["Shibuya Sky at sunset","Shibuya Scramble Square","Open rooftop over the crossing. Mt Fuji shows on clear days.","yes"],
+        ["Meiji Shrine sake barrel wall","Meiji Shrine","Painted sake barrels along the forest path.","yes"]],
+  near:["Harajuku","Shibuya","Omotesando"]},
+
+ {date:"2026-10-29", city:"Mt Fuji", title:"Mt Fuji day trip", stay:"APA Hotel Shinjuku Gyoemmae",
+  slots:{Morning:[["Early departure Shinjuku → Kawaguchiko","Kawaguchiko Station"],["Chureito Pagoda","Chureito Pagoda"]],
+         Afternoon:[["Lake Kawaguchiko","Lake Kawaguchi"],["Oishi Park","Oishi Park Fujikawaguchiko"],["Lunch with Mt Fuji view"]],
+         Evening:[["Oshino Hakkai village","Oshino Hakkai"],["Return to Tokyo"]]},
+  tip:"Mt Fuji is clearest early in the day. Grab plum or seaweed rice balls (onigiri) at a convenience store as a vegan backup, but check the label.",
+  vegan:[], veganNote:"Vegan options are limited around the lake. Pack snacks and tap a search below.",
+  must:[["Hoto noodles","Kawaguchiko","Thick noodles in a vegetable miso stew. The broth often uses fish stock, so ask.","ask"],
+        ["Kusa mochi at Oshino Hakkai","Oshino village","Grilled herb rice cakes with sweet bean paste. Usually vegan.","ask"],
+        ["Chureito Pagoda viewpoint","Arakurayama","About 400 steps up to the pagoda-and-Fuji postcard view.","yes"]],
+  near:["Kawaguchiko","Oshino Hakkai"]},
+
+ {date:"2026-10-30", city:"Kyoto", title:"Travel to Kyoto, Gion evening", stay:null,
+  slots:{Morning:[["Travel to Kyoto by bullet train, check in","Kyoto Station"]],
+         Afternoon:[["Settle in after travel"]],
+         Evening:[["Yasaka Shrine","Yasaka Shrine"],["Gion district","Gion Kyoto"],["Hanamikoji Street","Hanamikoji"],["Shirakawa canal","Shirakawa Gion"],["Dinner in Pontocho Alley","Pontocho"]]},
+  vegan:[["Matsuontoko","Near Yasaka Shrine","Fully vegan burgers and fried bites. Easy, casual dinner."],
+         ["Ain Soph. Journey Kyoto","Shinkyogoku, near Pontocho","Fully vegan, same team as the Tokyo café."]],
+  must:[["Shirakawa at night","Gion","Willows, stone bridge and lanterns along the canal.","yes"],
+        ["Yudofu in Pontocho","Pontocho","Kyoto's simmered tofu. Ask whether the dipping sauce has fish stock.","ask"]],
+  near:["Gion","Pontocho"]},
+
+ {date:"2026-10-31", city:"Kyoto", title:"Eastern Kyoto & Nishiki Market", stay:null,
+  slots:{Morning:[["Kiyomizu-dera, go early","Kiyomizu-dera"]],
+         Afternoon:[["Ninenzaka and Sannenzaka","Ninenzaka"],["Yasaka Shrine","Yasaka Shrine"]],
+         Evening:[["Nishiki Market","Nishiki Market"],["Teramachi and Shinkyogoku shopping","Shinkyogoku Shopping Street"],["Walk Kawaramachi and Kiyamachi","Kiyamachi Street Kyoto"]]},
+  vegan:[["Mumokuteki Cafe","Teramachi","Mostly vegan café right on your shopping route."],
+         ["Matsuontoko","Near Kiyomizu / Yasaka","Good lunch stop between the temple slopes."]],
+  must:[["Pickles and tofu skin at Nishiki","Nishiki Market","Kyoto pickles and fresh tofu skin (yuba). Most pickles are vegan.","ask"],
+        ["Yatsuhashi","Ninenzaka / Sannenzaka","Cinnamon rice-flour sweets, Kyoto's classic souvenir. Free samples everywhere.","yes"]],
+  near:["Kiyomizu-dera","Nishiki Market","Kawaramachi"]},
+
+ {date:"2026-11-01", city:"Kyoto", title:"Fushimi Inari & Arashiyama", stay:null,
+  slots:{Morning:[["Fushimi Inari Shrine","Fushimi Inari Taisha"],["Travel to Arashiyama","Arashiyama Station"],["Arashiyama Bamboo Grove","Arashiyama Bamboo Grove"]],
+         Afternoon:[["Togetsukyo Bridge","Togetsukyo Bridge"],["Kinkaku-ji (Golden Pavilion)","Kinkaku-ji"]],
+         Evening:[["Gion at night","Gion Kyoto"],["Traditional Kyoto dinner"]]},
+  vegan:[["Shigetsu at Tenryu-ji","Arashiyama, next to the bamboo grove","Buddhist temple cuisine, fully vegan. Reserve ahead."],
+         ["Ain Soph. Journey Kyoto","Shinkyogoku","Vegan backup for the evening."]],
+  must:[["Fushimi Inari before 8am","Fushimi","Walk past the first crowds to the upper gates.","yes"],
+        ["Inari sushi","Near Fushimi Inari","Rice in sweet fried tofu pockets. Ask about fish stock in the tofu.","ask"]],
+  near:["Arashiyama","Fushimi Inari","Gion"]},
+
+ {date:"2026-11-02", city:"Amanohashidate", title:"Amanohashidate day trip", stay:null,
+  slots:{Morning:[["Train to Amanohashidate","Amanohashidate Station"]],
+         Afternoon:[["Amanohashidate View Land","Amanohashidate View Land"],["Kasamatsu Park","Kasamatsu Park Miyazu"],["Chion-ji Temple","Chionji Amanohashidate"]],
+         Evening:[["Return to Osaka"]]},
+  book:"Trains and tickets for Amanohashidate",
+  vegan:[], veganNote:"Small town with few vegan places. Pack lunch from the station or a convenience store.",
+  must:[["Upside-down view at Kasamatsu Park","Kasamatsu","Look at the sandbar upside down between your legs. It's said to look like a bridge to heaven.","yes"],
+        ["Chie-no-mochi","By Chion-ji","Rice cakes topped with red bean paste, sold here for centuries. Usually vegan.","ask"]],
+  near:["Amanohashidate"]},
+
+ {date:"2026-11-03", city:"Osaka", title:"Osaka highlights", stay:null,
+  slots:{Morning:[["Osaka Castle","Osaka Castle"]],
+         Afternoon:[["Lunch"],["Shinsekai and Tsutenkaku Tower","Tsutenkaku"]],
+         Evening:[["Namba","Namba Osaka"],["Dotonbori","Dotonbori"]]},
+  vegan:[["Green Earth","Central Osaka","Vegan café. Check location and hours on Maps."],
+         ["Paprika Shokudo Vegan","Central Osaka","Fully vegan restaurant. Check hours."]],
+  must:[["Dotonbori at night","Namba","Neon, the famous running-man sign and canal-side street food.","yes"],
+        ["Kushikatsu in Shinsekai","Shinsekai","Fried skewers. Pick vegetable ones; the batter may contain egg, so ask.","ask"]],
+  near:["Osaka Castle","Namba","Shinsekai"]},
+
+ {date:"2026-11-04", city:"Osaka", title:"Universal Studios Japan", stay:null,
+  slots:{Morning:[["Universal Studios Japan, full day","Universal Studios Japan"]]},
+  book:"USJ tickets, plus Express Pass for Super Nintendo World",
+  tip:"Outside food generally isn't allowed in the park. Ask Guest Services for the vegan and allergy menu.",
+  vegan:[], veganNote:"Ask Guest Services for current plant-based options in the park and at Universal CityWalk.",
+  must:[["Super Nintendo World","USJ","Needs a timed entry ticket or Express Pass on busy days.","yes"],
+        ["Hogwarts after dark","USJ","The castle lit up at night is worth staying for.","yes"]],
+  near:["Universal CityWalk Osaka"]},
+
+ {date:"2026-11-05", city:"Osaka", title:"Free day", stay:null,
+  slots:{Morning:[["Spreadsheet says \"Ume\". Still to plan"]]},
+  tip:"Day 13 already covers Umeda, so this could be a free day. Ideas below.",
+  vegan:[], veganNote:"Depends on where you go. Tap a search below.",
+  must:[["Nara half-day","45 min from Namba by Kintetsu train","Friendly deer, the giant Buddha at Todai-ji and Nara Park in autumn.","yes"],
+        ["Nakazakicho","One stop from Umeda","Old wooden houses turned into small cafés and vintage shops.","yes"],
+        ["Kuromon Market","Nippombashi","Osaka's market street. Lots of fruit and snacks to graze on.","ask"]],
+  near:["Osaka","Nara"]},
+
+ {date:"2026-11-06", city:"Osaka", title:"Umeda skyline & shopping", stay:null,
+  slots:{Morning:[["Umeda Sky Building","Umeda Sky Building"]],Afternoon:[["Shopping in Umeda","Grand Front Osaka"]]},
+  vegan:[], veganNote:"Umeda's big stations and malls have the most choice. Tap a search below.",
+  must:[["Floating Garden Observatory","Umeda Sky Building","Open-air rooftop 170 m up. Go near sunset.","yes"],
+        ["Hankyu department store food hall","Hankyu Umeda basement","Huge food hall. Good for sweets and souvenirs.","ask"]],
+  near:["Umeda"]}
+];
+
+// say = how to pronounce (romanised), en = meaning, ja = used only for the speaker button audio
+const PHRASES = [
+ ["Greetings",[
+  ["Konnichiwa","Hello","こんにちは"],
+  ["Ohayō gozaimasu","Good morning","おはようございます"],
+  ["Konbanwa","Good evening","こんばんは"],
+  ["Ogenki desu ka?","How are you?","お元気ですか？"],
+  ["Genki desu","I'm fine","元気です"],
+  ["Hajimemashite","Nice to meet you","はじめまして"],
+  ["Oyasumi nasai","Good night","おやすみなさい"],
+  ["Sayōnara","Goodbye","さようなら"]]],
+ ["Everyday",[
+  ["Arigatō gozaimasu","Thank you very much","ありがとうございます"],
+  ["Sumimasen","Excuse me / Sorry","すみません"],
+  ["Hai / Iie","Yes / No","はい / いいえ"],
+  ["Eigo o hanasemasu ka?","Do you speak English?","英語を話せますか？"],
+  ["Wakarimasen","I don't understand","わかりません"],
+  ["Toire wa doko desu ka?","Where is the toilet?","トイレはどこですか？"],
+  ["Eki wa doko desu ka?","Where is the station?","駅はどこですか？"]]],
+ ["Shopping & eating",[
+  ["Ikura desu ka?","How much is it?","いくらですか？"],
+  ["Kore o kudasai","This one, please","これをください"],
+  ["Kādo de ii desu ka?","Can I pay by card?","カードでいいですか？"],
+  ["Mizu o kudasai","Water, please","水をください"],
+  ["Okaikei onegaishimasu","The bill, please","お会計お願いします"],
+  ["Oishii!","Delicious!","おいしい！"],
+  ["Gochisōsama deshita","Thanks for the meal (say when leaving)","ごちそうさまでした"]]],
+ ["Vegan",[
+  ["Bīgan desu","I'm vegan","ビーガンです"],
+  ["Niku, sakana, tamago, gyūnyū wa taberaremasen","I can't eat meat, fish, eggs or milk","肉、魚、卵、牛乳は食べられません"],
+  ["Dashi ni sakana wa haitte imasu ka?","Is there fish in the soup stock?","出汁に魚は入っていますか？"],
+  ["Bīgan menyū wa arimasu ka?","Do you have a vegan menu?","ビーガンメニューはありますか？"],
+  ["Niku nashi de onegaishimasu","Without meat, please","肉なしでお願いします"]]]
+];
+
+const BOOKINGS = [
+ ["teamLab Borderless","26 Oct · done via Klook",true],
+ ["Tokyo Skytree","27 Oct",false],
+ ["Shibuya Sky","28 Oct · sunset slot",false],
+ ["Shigetsu lunch at Tenryu-ji","1 Nov · optional",false],
+ ["Amanohashidate trains","2 Nov",false],
+ ["Universal Studios + Express Pass","4 Nov",false],
+ ["Kyoto hotel","30 Oct – 2 Nov · not in spreadsheet",false],
+ ["Osaka hotel","2 – 7 Nov · not in spreadsheet",false]
+];
+
+const store = {
+  get(k,d){try{const v=localStorage.getItem("jp26:"+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("jp26:"+k,JSON.stringify(v))}catch(e){}}
+};
+let done = store.get("done",{}), bk = store.get("bk",{}), filter = store.get("filter","all");
+let view = store.get("view","plan");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dt = iso => new Date(iso+"T00:00:00");
+const wd = iso => dt(iso).toLocaleDateString("en-AU",{weekday:"short"});
+const dm = iso => dt(iso).toLocaleDateString("en-AU",{day:"numeric",month:"short"});
+const todayISO = (()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})();
+const todayIdx = DAYS.findIndex(d=>d.date===todayISO);
+let cur = (()=>{const h=location.hash.replace("#day","");if(/^\d+$/.test(h)&&DAYS[h-1])return h-1;if(todayIdx>=0)return todayIdx;const s=store.get("day",0);return s>=0&&s<DAYS.length?s:0})();
+
+const ICON = {Morning:"☀",Afternoon:"◐",Evening:"☾"};
+const bkOn = i => bk[i]!==undefined ? bk[i] : BOOKINGS[i][2];
+
+function countdown(){
+  const start=dt("2026-10-25"), end=new Date("2026-11-06T23:59:59"), now=new Date(), el=document.getElementById("countdown");
+  if(now<start){const n=Math.ceil((start-now)/864e5);el.textContent="✈ "+n+" day"+(n===1?"":"s")+" to go";}
+  else if(now<=end) el.textContent = todayIdx>=0 ? "Today is Day "+(todayIdx+1)+" of 13" : "You're on the trip";
+  else el.textContent="Trip complete. Welcome home!";
+}
+function bkCount(){const n=BOOKINGS.filter((b,i)=>!bkOn(i)).length;const el=document.getElementById("bkn");el.textContent=n||"";el.hidden=!n;}
+
+function setView(v){
+  view=v; store.set("view",v);
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));
+  ({plan:renderPlan,phr:renderPhrases,bk:renderBookings})[v]();
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{setView(t.dataset.v);window.scrollTo({top:0})});
+
+function go(i){cur=i;store.set("day",i);try{history.replaceState(null,"","#day"+(i+1))}catch(e){}renderPlan();}
+
+function itemKeys(d){let n=0;Object.values(d.slots).forEach(a=>n+=a.length);return [...Array(n)].map((_,i)=>d.date+"|"+i);}
+
+function renderPlan(){
+  const d=DAYS[cur], cv=CITY[d.city], keys=itemKeys(d);
+  const doneN = keys.filter(k=>done[k]).length;
+  let idx=0;
+  const picker = DAYS.map((x,i)=>`<button class="dbtn" role="tab" aria-selected="${i===cur}" data-i="${i}" style="--c:var(${CITY[x.city]})">
+      ${i===todayIdx?'<span class="tod">TODAY</span>':""}${x.book?'<span class="flag" title="Booking needed"></span>':""}
+      <span class="dn">DAY ${i+1}</span><span class="dd">${wd(x.date)} ${dm(x.date)}</span><span class="dc">${esc(x.city==="Amanohashidate"?"Amano.":x.city)}</span></button>`).join("");
+
+  const slots = Object.entries(d.slots).map(([when,items])=>`
+    <div class="slot"><h3><span class="ico" aria-hidden="true">${ICON[when]}</span>${when}</h3><ul>
+    ${items.map(([txt,q])=>{const k=d.date+"|"+(idx++);const id="i"+cur+"_"+idx;return `<li class="item ${done[k]?"done":""}">
+      <input type="checkbox" id="${id}" data-k="${k}" ${done[k]?"checked":""}><label for="${id}">${esc(txt)}</label>
+      ${q?`<a class="maplink" href="${Q(q)}" target="_blank" rel="noopener">Map</a>`:""}</li>`}).join("")}
+    </ul></div>`).join("");
+
+  let picks="";
+  if(filter!=="must") picks += d.vegan.length ? d.vegan.map(p=>card(p,"v",d)).join("") : `<div class="empty">${esc(d.veganNote)}</div>`;
+  if(filter!=="vegan") picks += d.must.map(p=>card(p,"m",d)).join("");
+
+  const v=document.getElementById("view");
+  v.innerHTML = `
+    <div class="picker" role="tablist" aria-label="Choose a day">${picker}</div>
+    <div class="fade" style="--c:var(${cv})">
+      <section class="dayhead">
+        <div class="row">
+          <div><div class="pill">Day ${cur+1} · ${esc(d.city)}</div><h2>${esc(d.title)}</h2>
+          <div class="sub">${dt(d.date).toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}</div></div>
+          <div class="navbtns"><button id="prev" ${cur===0?"disabled":""} aria-label="Previous day">← Prev</button><button id="next" ${cur===DAYS.length-1?"disabled":""} aria-label="Next day">Next →</button></div>
+        </div>
+        <div class="progress"><div class="bar"><i style="width:${keys.length?doneN/keys.length*100:0}%"></i></div><span id="prog">${doneN} of ${keys.length} done</span></div>
+        ${d.book?`<div class="alert"><b>Book this:</b> ${esc(d.book)}</div>`:""}
+        ${d.tip?`<div class="tip">💡 ${esc(d.tip)}</div>`:""}
+        <div class="stay"><span>Staying at:</span> <b>${d.stay?esc(d.stay):"Not in spreadsheet yet"}</b></div>
+      </section>
+
+      <div class="sec-title">Today's plan</div>
+      <div class="slots">${slots}</div>
+
+      <div class="sec-title">Food & places nearby</div>
+      <div class="filters">${[["all","All"],["vegan","🌱 Vegan"],["must","⭐ Must try"]].map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${l}</button>`).join("")}</div>
+      <div class="picks">${picks}</div>
+      <div class="finds">${d.near.map(n=>`<a href="${Q("vegan restaurant near "+n)}" target="_blank" rel="noopener">🔍 Vegan near ${esc(n)}</a>`).join("")}</div>
+    </div>`;
+
+  v.querySelectorAll(".dbtn").forEach(b=>b.onclick=()=>go(+b.dataset.i));
+  const sel=v.querySelector('.dbtn[aria-selected="true"]'); if(sel) sel.scrollIntoView({block:"nearest",inline:"center"});
+  v.querySelector("#prev").onclick=()=>go(cur-1);
+  v.querySelector("#next").onclick=()=>go(cur+1);
+  v.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{filter=b.dataset.f;store.set("filter",filter);renderPlan();});
+  v.querySelectorAll(".item input").forEach(c=>c.onchange=()=>{
+    done[c.dataset.k]=c.checked;store.set("done",done);c.closest(".item").classList.toggle("done",c.checked);
+    const n=keys.filter(k=>done[k]).length;v.querySelector("#prog").textContent=n+" of "+keys.length+" done";v.querySelector(".bar i").style.width=(n/keys.length*100)+"%";
+  });
+}
+
+function card([name,area,desc,ok],type,d){
+  const tags = type==="v" ? '<span class="tag v">🌱 Vegan</span>' :
+    '<span class="tag m">⭐ Must try</span>'+(ok==="ask"?'<span class="tag a">Ask if vegan</span>':'<span class="tag v">Vegan OK</span>');
+  const where = d.city==="Mt Fuji" ? "Yamanashi Japan" : d.city+" Japan";
+  return `<div class="pick"><div class="tags">${tags}</div><div class="name">${esc(name)}</div><div class="area">📍 ${esc(area)}</div>
+    <p>${esc(desc)}</p><a href="${Q(name+", "+where)}" target="_blank" rel="noopener">Open in Maps →</a></div>`;
+}
+
+const canSpeak = "speechSynthesis" in window;
+function renderPhrases(){
+  const v=document.getElementById("view");
+  v.innerHTML = `<div class="fade"><p class="hint">Say it how it's written. ${canSpeak?"Tap the speaker to hear it.":""}</p>
+    ${PHRASES.map(([g,list],gi)=>`<div class="pgroup"><h3>${g}</h3>${list.map(([say,en],i)=>`
+      <div class="phrase"><div class="txt"><span class="say">${esc(say)}</span><span class="en">${esc(en)}</span></div>
+      ${canSpeak?`<button class="speak" data-g="${gi}" data-i="${i}" aria-label="Hear ${esc(en)}"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>`:""}
+      </div>`).join("")}</div>`).join("")}</div>`;
+  v.querySelectorAll(".speak").forEach(b=>b.onclick=()=>{
+    try{const p=PHRASES[b.dataset.g][1][b.dataset.i];speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(p[2].replace(" / ","、"));u.lang="ja-JP";u.rate=.85;speechSynthesis.speak(u);}catch(e){}
+  });
+}
+
+function renderBookings(){
+  const v=document.getElementById("view");
+  v.innerHTML = `<div class="fade"><p class="hint">Tick each one off once it's booked.</p>
+    ${BOOKINGS.map(([n,w],i)=>`<label class="bk ${bkOn(i)?"ok":""}"><input type="checkbox" id="bk${i}" data-i="${i}" ${bkOn(i)?"checked":""}><span><span class="t">${esc(n)}</span><small>${esc(w)}</small></span></label>`).join("")}</div>`;
+  v.querySelectorAll(".bk input").forEach(c=>c.onchange=()=>{bk[c.dataset.i]=c.checked;store.set("bk",bk);c.closest(".bk").classList.toggle("ok",c.checked);bkCount();});
+}
+
+countdown(); bkCount(); setView(view);
+</script>
+</body>
+</html>
